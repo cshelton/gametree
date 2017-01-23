@@ -52,5 +52,27 @@ int main(int argc, char **argv) {
 	}
 
 	cout << ss.ret << endl;
+
+	sstate<> ss2;
+	randpick(ss2,int i1 : zeroto<>(4))
+		randpick(ss2,int i2 : zeroto<>(3))
+			ss2.set(i1*i2);
+	cout << ss2.ret << endl;
+
+	vector<double> leaves3 = {4,3,4, 1,1,4, 4,1,1};
+	sstate<> ss3(1,4);
+	maxpick(ss3,int i1: zeroto<>(3))
+		if (i1==2) {
+			minpick(ss3,int i2 : zeroto<>(3)) {
+				ss3.set(leaves3[i1*3+i2]);
+				cout << "at " << i1 << ' ' << i2 << endl;
+			}
+		} else {
+			randpick(ss3,3,int i2 : zeroto<>(3)) {
+				ss3.set(leaves3[i1*3+i2]);
+				cout << "at " << i1 << ' ' << i2 << endl;
+			}
+		}
+	cout << ss3.ret << endl;
 }
 				

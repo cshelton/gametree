@@ -72,6 +72,8 @@ struct sstate {
      _41,_42,_43,_44,_45,_46,_47,_48,_49,_50, \
      _51,_52,_53,_54,_55,_56,_57,_58,_59,_60, \
      _61,_62,_63,N,...) N
+#define __MULTARG__(...)  __MULTARG_I_(__VA_ARGS__,__ONEORMORE_N())
+#define __MULTARG_I_(...) __ARG_N(__VA_ARGS__)
 #define __RSEQ_N() \
      63,62,61,60,                   \
      59,58,57,56,55,54,53,52,51,50, \
@@ -80,11 +82,23 @@ struct sstate {
      29,28,27,26,25,24,23,22,21,20, \
      19,18,17,16,15,14,13,12,11,10, \
      9,8,7,6,5,4,3,2,1,0
+#define __ONEORMORE_N() \
+     2,2,2,2,                   \
+     2,2,2,2,2,2,2,2,2,2, \
+     2,2,2,2,2,2,2,2,2,2, \
+     2,2,2,2,2,2,2,2,2,2, \
+     2,2,2,2,2,2,2,2,2,2, \
+     2,2,2,2,2,2,2,2,2,2, \
+     2,2,2,2,2,2,3,2,1,0
 
 // general definition for any function name
 #define _VFUNC_(name, n) name##n
 #define _VFUNC(name, n) _VFUNC_(name, n)
 #define VFUNC(func, ...) _VFUNC(func, __NARG__(__VA_ARGS__)) (__VA_ARGS__)
+
+#define _MFUNC_(name, n) name##n
+#define _MFUNC(name, n) _MFUNC_(name, n)
+#define MFUNC(func, ...) _MFUNC(func, __MULTARG__(__VA_ARGS__)) (__VA_ARGS__)
 
 
 #define COMMA ,
@@ -116,6 +130,33 @@ struct sstate {
 			if (inlinegt_break) break; \
 			else doafter(inlinegt_break = state.update(myret,false)) \
 
+
+#define inlinegt_localize1(varname) \
+	addstmt(auto inlinegt_save = varname) \
+	doafter(varname = inlinegt_save)
+
+#define inlinegt_localize2(varname,...) \
+	addstmt(auto inlinegt_save = varname) \
+	doafter(varname = inlinegt_save) \
+	inlinegt_localize1(__VA_ARGS__)
+
+#define inlinegt_localize3(varname,...) \
+	addstmt(auto inlinegt_save = varname) \
+	doafter(varname = inlinegt_save) \
+	inlinegt_localize2(__VA_ARGS__)
+
+#define inlinegt_localize4(varname,...) \
+	addstmt(auto inlinegt_save = varname) \
+	doafter(varname = inlinegt_save) \
+	inlinegt_localize3(__VA_ARGS__)
+
+#define inlinegt_localize5(varname,...) \
+	addstmt(auto inlinegt_save = varname) \
+	doafter(varname = inlinegt_save) \
+	inlinegt_localize4(__VA_ARGS__)
+
+#define localize(...) VFUNC(inlinegt_localize, __VA_ARGS__)
+	
 #define inlinegt_randpick2(state,loopdef) \
 	addstmt(decltype(state.alpha) inlinegt_sum)\
 	addstmt(int inlinegt_count = 0)\

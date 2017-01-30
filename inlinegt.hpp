@@ -5,6 +5,8 @@
 #include <utility>
 #include <stdexcept>
 
+namespace inlinegt {
+
 template<typename V=double>
 struct sstate {
 	sstate(const V &minv = std::numeric_limits<V>::lowest(),
@@ -60,6 +62,8 @@ struct sstate {
 		done = true;
 	}
 };
+
+}
 
 // get number of arguments with __NARG__
 #define __NARG__(...)  __NARG_I_(__VA_ARGS__,__RSEQ_N())

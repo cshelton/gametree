@@ -4,13 +4,14 @@
 #include <vector>
 #include <array>
 #include <functional>
+#include <iostream>
 #include "inlinegt.hpp"
 
 namespace ia {
 
 struct offres {
 	int surges,hits,range,pierces;
-	offres(int s=0, int h=0, int r=0, int p=0) : surges(s), hits(h), range(r), pierces(p) {}
+	constexpr offres(int s=0, int h=0, int r=0, int p=0) : surges(s), hits(h), range(r), pierces(p) {}
 
 	offres &operator+=(const offres &r) {
 		surges += r.surges;
@@ -28,28 +29,28 @@ struct offres {
 		return *this;
 	}
 
-	offres operator+(const offres &r) const {
+	constexpr offres operator+(const offres &r) const {
 		offres ret(*this);
 		return ret+=r;
 	}
 
-	offres operator-(const offres &r) {
+	constexpr offres operator-(const offres &r) {
 		offres ret(*this);
 		return ret-=r;
 	}
 
-	bool valid() const {
+	constexpr bool valid() const {
 		return surges>=0 && hits>=0 && range>=0 && pierces>=0;
 	}
 };
 
-ostream &operator<<(ostream &os, const offres &a) {
+std::ostream &operator<<(std::ostream &os, const offres &a) {
 	return os << '(' << a.surges << ',' << a.hits << ',' << a.range << ',' << a.pierces << ')';
 }
 
 struct defres {
 	int evades,blocks,dodges;
-	defres(int e=0, int b=0, int d=0) : evades(e), blocks(b), dodges(d) {}
+	constexpr defres(int e=0, int b=0, int d=0) : evades(e), blocks(b), dodges(d) {}
 	defres &operator+=(const defres &r) {
 		evades += r.evades;
 		blocks += r.blocks;
@@ -64,23 +65,23 @@ struct defres {
 		return *this;
 	}
 
-	defres operator+(const defres &r) const {
+	constexpr defres operator+(const defres &r) const {
 		defres ret(*this);
 		return ret+=r;
 	}
 
-	defres operator-(const defres &r) {
+	constexpr defres operator-(const defres &r) {
 		defres ret(*this);
 		return ret-=r;
 	}
 
-	bool valid() const {
+	constexpr bool valid() const {
 		return evades>=0 && blocks>=0 && dodges>=0;
 	}
 };
 
 
-ostream &operator<<(ostream &os, const defres &d) {
+std::ostream &operator<<(std::ostream &os, const defres &d) {
 	return os << '(' << d.evades << ',' << d.blocks << ',' << d.dodges << ')';
 }
 
@@ -91,13 +92,13 @@ using die = std::array<FACET,NFACE>;
 using offdie = die<offres,6>;
 using defdie = die<defres,6>;
 
-constexpr offdie red { {{0,1,0},{1,2,0},{0,2,0},{0,2,0},{0,3,0},{0,3,0}} };
-constexpr offdie yellow { {{2,1,0},{1,0,0},{1,0,2},{0,1,2},{1,1,1},{0,2,1}} };
-constexpr offdie green { {{0,2,1},{1,1,1},{1,0,1},{1,1,2},{0,2,2},{0,2,3}} };
-constexpr offdie blue { {{1,0,2},{0,1,2},{1,1,3},{0,2,3},{0,2,4},{0,1,5}} };
+constexpr offdie red = { {{0,1,0},{1,2,0},{0,2,0},{0,2,0},{0,3,0},{0,3,0}} };
+constexpr offdie yellow = { {{2,1,0},{1,0,0},{1,0,2},{0,1,2},{1,1,1},{0,2,1}} };
+constexpr offdie green = { {{0,2,1},{1,1,1},{1,0,1},{1,1,2},{0,2,2},{0,2,3}} };
+constexpr offdie blue = { {{1,0,2},{0,1,2},{1,1,3},{0,2,3},{0,2,4},{0,1,5}} };
 
-constexpr defdie black { {{1,0,0},{0,1,0},{0,1,0},{0,2,0},{0,2,0},{0,3,0}} };
-constexpr defdie white { {{0,0,0},{1,0,0},{0,1,0},{1,1,0},{1,1,0},{0,0,1}} };
+constexpr defdie black = { {{1,0,0},{0,1,0},{0,1,0},{0,2,0},{0,2,0},{0,3,0}} };
+constexpr defdie white = { {{0,0,0},{1,0,0},{0,1,0},{1,1,0},{1,1,0},{0,0,1}} };
 
 template<typename DTYPE>
 struct diepool {
@@ -106,7 +107,7 @@ struct diepool {
 	std::vector<dieT> dice;
 
 	template<typename... T>
-	diepool(T &&...ds) : dice{forward<T>(ds)...} {}
+	constexpr diepool(T &&...ds) : dice{std::forward<T>(ds)...} {}
 	
 	struct iterator {
 		std::vector<int> sidenum;
@@ -378,9 +379,17 @@ void exelsts(SS &ss, attstatus &as, F f, L1 &&l1, Ls &&...ls) {
 }
 
 template<typename V=double>
+using abllst = std::vector<attability<V>>;
+
+template<typename V=double>
 struct attablset {
-	using abllst = std::vector<attability<V>>;
 	abllst preroll,postroll,postsum,postatt;
+	template<typename T1, typename T2, typename T3, typename T4>
+	constexpr attablset(T1 &&pre, T2 &&roll, T3 &&sum, T4 &&att)
+		: preroll(std::forward<T1>(pre)),
+		  postroll(std::forward<T1>(roll)),
+		  postsum(std::forward<T1>(sum)),
+		  postatt(std::forward<T1>(att)) {}
 	// there are a number of other nuanced difference I'm ignoring for now
 };
 
@@ -388,6 +397,9 @@ template<typename V=double>
 struct weapon {
 	diepool<offdie> offdice;
 	attablset<V> abls;
+
+	constexpr weapon(diepool dice, attablset<V> a)
+		: offdice(std::move(dice)), abls(std::move(a)) {}
 };
 
 template<typename V=double>
@@ -395,10 +407,21 @@ struct figure {
 	std::vector<weapon<V>> weapons;
 	diepool<defdie> defdice;
 
+	int healthlim, strainlim;
 	int health,strainleft;
+	int speed;
 
 	attablset<V> offabls;
 	attablset<V> defabls;
+
+	template<typename... Ws>
+	constexpr figure(int hp, int endur, int sp,
+			attablset<V> oabl, attablset<V> dabl,
+			diepool<defdie> ddice, Ws &&...ws)
+		: health(hp), healthlim(hp), strainleft(endur), strainlim(endur),
+		  speed(sp),
+		  defdice(std::move(ddice)), offabls(std::move(oabl)),
+		  defabls(std::move(dabl)), weapons(std::forward<Ws>(ws)...) {}
 };
 
 template<typename F, typename V> // In this case, F should return the value (assume offense to maximize) -- it will be passed nothing
@@ -573,3 +596,5 @@ template<chooser WHO=chooser::def,typename V=double>
 constexpr rerollalldef = rerollall<defdie,V>(WHO);
 
 }
+
+#endif
